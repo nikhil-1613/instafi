@@ -24,3 +24,13 @@ export const LikeSchema = z.object({
 export const BookMarkSchema = z.object({
     postId: z.string(),
 })
+
+export const CommentSchema = z.object({
+    id: z.string(),
+    body: z.string(),
+    postId: z.string(),
+})
+
+export const CreateComment = CommentSchema.omit({id:true})
+export const UpdateComment = CommentSchema;
+export const DeleteComment = CommentSchema.pick({id:true})
