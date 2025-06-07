@@ -1,3 +1,5 @@
+
+// "use client";
 import { auth } from "@/auth";
 import Comment from "@/components/Comment";
 import CommentForm from "@/components/CommentForm";
@@ -14,11 +16,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchPostById } from "@/lib/data";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { Card } from "./ui/card";
 import MiniPost from "./MiniPost";
 
-async function SinglePost({ id }: { id: string }) {
+async function SinglePost() {
+  const params = useParams();
+  const id = params?.id as string;
   const post = await fetchPostById(id);
   const session = await auth();
   const postUsername = post?.user.username;

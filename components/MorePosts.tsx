@@ -1,9 +1,13 @@
 import { fetchPostById, fetchPostsByUsername } from "@/lib/data";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import PostsGrid from "./PostsGrid";
+import { use } from "react";
 
-async function MorePosts({ postId }: { postId: string }) {
+async function MorePosts() {
+const params = useParams();
+  const postId = params?.id as string;
+
   const post = await fetchPostById(postId);
   const postUsername = post?.user.username;
   const posts = await fetchPostsByUsername(postUsername!, postId);
