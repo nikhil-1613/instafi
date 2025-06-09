@@ -292,7 +292,7 @@ export async function updatePost(values: z.infer<typeof UpdatePost>) {
     };
   }
 
-  const { id, fileUrl, caption } = validatedFields.data;
+  const { id, fileUrl, caption , location } = validatedFields.data;
 
   const post = await prisma.post.findUnique({
     where: {
@@ -313,6 +313,11 @@ export async function updatePost(values: z.infer<typeof UpdatePost>) {
       data: {
         fileUrl,
         caption,
+        location: typeof location === "string"
+          ? location
+          : location !== undefined && location !== null
+            ? String(location)
+            : "",
       },
     });
   } catch (error) {

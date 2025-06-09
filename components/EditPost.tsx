@@ -34,47 +34,52 @@ function EditPost({ id, post }: { id: string; post: Post }) {
   const pathname = usePathname();
   const isEditPage = pathname === `/dashboard/p/${id}/edit`;
   const router = useRouter();
+
   const form = useForm<z.infer<typeof UpdatePost>>({
     resolver: zodResolver(UpdatePost),
     defaultValues: {
       id: post.id,
       caption: post.caption || "",
+      location: post.location || "", 
       fileUrl: post.fileUrl,
     },
   });
+
   const fileUrl = form.watch("fileUrl");
 
   if (!mount) return null;
 
   return (
     <Dialog open={isEditPage} onOpenChange={(open) => !open && router.back()}>
-      <DialogContent>
+      <DialogContent className="max-w-md sm:max-w-lg"> {/* Reduced width for compactness */}
         <DialogHeader>
           <DialogTitle>Edit info</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form
-            className="space-y-4"
+            className="space-y-3"
             onSubmit={form.handleSubmit(async (values) => {
               const res = await updatePost(values);
-
               if (res) {
                 return toast.error(<Error res={res} />);
               }
+              toast.success("Post updated successfully!"); 
             })}
           >
-            <div className="h-96 md:h-[450px] overflow-hidden rounded-md">
+            {/* 📝 Reduced height for compact preview */}
+            <div className="h-56 overflow-hidden rounded-md">
               <AspectRatio ratio={1 / 1} className="relative h-full">
                 <Image
                   src={fileUrl}
                   alt="Post preview"
                   fill
-                  className="rounded-md object-cover"
+                  className="rounded-md object-fit"
                 />
               </AspectRatio>
             </div>
 
+            {/* Caption Field */}
             <FormField
               control={form.control}
               name="caption"
@@ -83,7 +88,7 @@ function EditPost({ id, post }: { id: string; post: Post }) {
                   <FormLabel htmlFor="caption">Caption</FormLabel>
                   <FormControl>
                     <Input
-                      type="caption"
+                      type="text"
                       id="caption"
                       placeholder="Write a caption..."
                       {...field}
@@ -94,7 +99,27 @@ function EditPost({ id, post }: { id: string; post: Post }) {
               )}
             />
 
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            {/* Location Field */}
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="location">Location</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      id="location"
+                      placeholder="Add a location..."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
               Done
             </Button>
           </form>

@@ -1,4 +1,5 @@
-export const dynamic = 'force-dynamic'; // <-- ADD THIS LINE
+
+// app/dashboard/[username]/layout.tsx
 import { auth } from "@/auth";
 import FollowButton from "@/components/FollowButton";
 import ProfileAvatar from "@/components/ProfileAvatar";
@@ -13,27 +14,33 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 type Props = {
-  params: {
-    username: string;
-  };
+  params: Promise<{ username: string }>; // Explicitly type params as a Promise
   children: React.ReactNode;
 };
 
+// Metadata generation for dynamic route
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const username = params.username;
-
+  const resolvedParams = await params; // Await params to resolve the Promise
+  const { username } = resolvedParams; // Destructure after awaiting
   const profile = await fetchProfile(username);
 
+  if (!profile) {
+    return {
+      title: "Profile Not Found",
+    };
+  }
+
   return {
-    title: `${profile?.name} (@${profile?.username})`,
+    title: `${profile.name} (@${profile.username})`,
   };
 }
 
-async function ProfileLayout({ children, params }: Props) {
-  const { username } = params;
+export default async function ProfileLayout({ params, children }: Props) {
+  const resolvedParams = await params; // Await params to resolve the Promise
+  const { username } = resolvedParams; // Destructure after awaiting
   const profile = await fetchProfile(username);
   const session = await auth();
 
@@ -41,10 +48,8 @@ async function ProfileLayout({ children, params }: Props) {
     notFound();
   }
 
-  const isCurrentUser = session?.user.id === profile?.id;
-
-  // the followerId here is the id of the user who is following the profile
-  const isFollowing = profile?.followedBy.some(
+  const isCurrentUser = session?.user.id === profile.id;
+  const isFollowing = profile.followedBy.some(
     (user) => user.followerId === session?.user.id
   );
 
@@ -66,8 +71,8 @@ async function ProfileLayout({ children, params }: Props) {
               {isCurrentUser ? (
                 <>
                   <Button
-                    size={"icon"}
-                    variant={"ghost"}
+                    size="icon"
+                    variant="ghost"
                     className="md:order-last"
                   >
                     <Settings />
@@ -83,9 +88,9 @@ async function ProfileLayout({ children, params }: Props) {
                     Edit profile
                   </Link>
                   <Button
-                    variant={"secondary"}
+                    variant="secondary"
                     className="font-bold"
-                    size={"sm"}
+                    size="sm"
                   >
                     View archive
                   </Button>
@@ -93,8 +98,8 @@ async function ProfileLayout({ children, params }: Props) {
               ) : (
                 <>
                   <Button
-                    size={"icon"}
-                    variant={"ghost"}
+                    size="icon"
+                    variant="ghost"
                     className="md:order-last"
                   >
                     <MoreHorizontal />
@@ -104,9 +109,9 @@ async function ProfileLayout({ children, params }: Props) {
                     profileId={profile.id}
                   />
                   <Button
-                    variant={"secondary"}
+                    variant="secondary"
                     className="font-bold"
-                    size={"sm"}
+                    size="sm"
                   >
                     Message
                   </Button>
@@ -118,14 +123,12 @@ async function ProfileLayout({ children, params }: Props) {
               <p className="font-medium">
                 <strong>{profile.posts.length} posts</strong>
               </p>
-
               <Link
                 href={`/dashboard/${profile.username}/followers`}
                 className="font-medium"
               >
                 <strong>{profile.followedBy.length}</strong> followers
               </Link>
-
               <Link
                 href={`/dashboard/${profile.username}/following`}
                 className="font-medium"
@@ -148,8 +151,7 @@ async function ProfileLayout({ children, params }: Props) {
     </>
   );
 }
-
-export default ProfileLayout;
+// // export const dynamic = 'force-dynamic';
 
 // import { auth } from "@/auth";
 // import FollowButton from "@/components/FollowButton";
@@ -171,12 +173,12 @@ export default ProfileLayout;
 //   children: React.ReactNode;
 // };
 
+// // ✅ Fixed generateMetadata: use params from argument, not useParams()
 // export async function generateMetadata(
 //   { params }: Props,
 //   parent: ResolvingMetadata
 // ): Promise<Metadata> {
 //   const username = params.username;
-
 //   const profile = await fetchProfile(username);
 
 //   return {
@@ -184,18 +186,20 @@ export default ProfileLayout;
 //   };
 // }
 
-// async function ProfileLayout({ children, params: { username } }: Props) {
+// async function ProfileLayout({ children, params }: Props) {
+//   const { username } =  params;
 //   const profile = await fetchProfile(username);
 //   const session = await auth();
+//   if (!profile) {
+//     notFound();
+//   }
+
 //   const isCurrentUser = session?.user.id === profile?.id;
-//   //   the followerId here is the id of the user who is following the profile
+
 //   const isFollowing = profile?.followedBy.some(
 //     (user) => user.followerId === session?.user.id
 //   );
 
-//   if (!profile) {
-//     notFound();
-//   }
 //   return (
 //     <>
 //       <ProfileHeader username={profile.username} />
@@ -214,8 +218,8 @@ export default ProfileLayout;
 //               {isCurrentUser ? (
 //                 <>
 //                   <Button
-//                     size={"icon"}
-//                     variant={"ghost"}
+//                     size="icon"
+//                     variant="ghost"
 //                     className="md:order-last"
 //                   >
 //                     <Settings />
@@ -231,9 +235,9 @@ export default ProfileLayout;
 //                     Edit profile
 //                   </Link>
 //                   <Button
-//                     variant={"secondary"}
+//                     variant="secondary"
 //                     className="font-bold"
-//                     size={"sm"}
+//                     size="sm"
 //                   >
 //                     View archive
 //                   </Button>
@@ -241,8 +245,8 @@ export default ProfileLayout;
 //               ) : (
 //                 <>
 //                   <Button
-//                     size={"icon"}
-//                     variant={"ghost"}
+//                     size="icon"
+//                     variant="ghost"
 //                     className="md:order-last"
 //                   >
 //                     <MoreHorizontal />
@@ -252,9 +256,9 @@ export default ProfileLayout;
 //                     profileId={profile.id}
 //                   />
 //                   <Button
-//                     variant={"secondary"}
+//                     variant="secondary"
 //                     className="font-bold"
-//                     size={"sm"}
+//                     size="sm"
 //                   >
 //                     Message
 //                   </Button>
